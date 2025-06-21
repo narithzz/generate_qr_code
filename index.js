@@ -4,6 +4,7 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
+const generatePayload = require('promptpay-qr')
 
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json());
@@ -322,6 +323,9 @@ app.post('/generate', async (req, res) => {
                   background: var(--primary-color);
                   color: white;
               }
+              .break-all {
+                  word-break: break-all;
+              }
               @media (max-width: 600px) {
                   .container {
                       padding: 25px;
@@ -340,7 +344,7 @@ app.post('/generate', async (req, res) => {
       <body>
           <div class="container">
               <h1>Generated QR Code</h1>
-              <p><strong>Text:</strong> ${text}</p>
+              <p class="break-all"><strong>Text:</strong> ${text}</p>
               <div class="qr-container">
                   <img src="data:image/png;base64,${base64QR}" alt="QR Code" />
               </div>
@@ -421,6 +425,19 @@ app.post('/qr-advanced', async (req, res) => {
   } catch (error) {
     console.error('Error generating advanced QR code:', error);
     res.status(500).json({ error: 'Failed to generate QR code' });
+  }
+});
+
+app.get('/promptpay-qr', async (req, res) => {
+  const mobileNumber = '0876412072';
+  const amount = 150.00;
+
+  try {
+    const payload = generatePayload(mobileNumber, { amount });
+    const qr = await QRCode.toDataURL(payload);
+    res.send(`<img src="${qr}" />`);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
   }
 });
 
